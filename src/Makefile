@@ -8,8 +8,8 @@ CFLAGS = -pedantic -Wall -ansi
 LFLAGS = -Wall
 
 $(TARGET): $(OBJS)
-	$(CC) -c -o $@.o $@.c
-	$(CC) -o $@ $@.o $(OBJS)
+	$(CC) -c -o $@.o $@.c $(CFLAGS)
+	$(CC) -o $@ $@.o $(OBJS) $(LFLAGS)
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

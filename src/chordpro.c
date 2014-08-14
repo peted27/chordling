@@ -4,14 +4,12 @@
 #include <string.h>
 
 
-void read_rest_of_line(void);
-void terminate_buffer(char *buffer);
 
 BOOLEAN process_file(char *filename)
 {
 	/* file parsing */
 	FILE *fp;
-	char c;
+
 	BOOLEAN parsing_status = TRUE;
 	int line_count = 0;
 
@@ -23,6 +21,7 @@ BOOLEAN process_file(char *filename)
 	char arg_buffer[BUFFER_LENGTH];
 
 	/* buffer indexes */
+	char lin_ch;
 	int lin_buf_index = 0;
 	int chd_buf_index = 0;
 	int lyr_buf_index = 0;
@@ -48,121 +47,57 @@ BOOLEAN process_file(char *filename)
 	}
 	
 	/* loop over all lines in the file */
-	while ((c = fgetc(fp)) != EOF && parsing_status)
+	while (fgets(lin_buffer, BUFFER_LENGTH, fp) != NULL && parsing_status)
 	{
+		
 
-		switch (c)
+		/* handle some known cases before we move on to processing chords/lyrics */
+		switch (lin_buffer[0])
 		{
+		case '#':
+			break;
 		case '{':
-			if (in_directive)
-			{
-				fprintf(stderr, "Error, in %s at line %d. Already in directive\n", filename, line_count);
-			}
-			else
-			{
-				in_directive = TRUE;
-			}
 			break;
-
-
-		case '}':
-			in_directive = FALSE;
-			in_directive_arg = FALSE;
-			/* process directive */
+		default:
 			break;
+		}
 
-		case ':':
-			if (in_directive)
+		/* just a normal line, lets get cracking */
+		for (lin_buf_index = 0; lin_buf_index < strlen(lin_buffer); lin_buf_index++)
+		{
+			lin_ch = lin_buffer[lin_buf_index];
+			
+			if (lin_ch == '[' && !in_chord)
 			{
-				in_directive_arg = TRUE;
+				in_chord == TRUE;
+			}
+			else if (lin_ch == '[' && in_chord)
+			{
+				/* error */
+			}
+			else if (lin_ch == ']' && in_chord)
+			{
+				in_chord == FALSE;
+			}
+			else if (lin_ch == ']' && !in_chord)
+			{
+				/* error */
+			}
+			else if (in_chord)
+			{
+				
 			}
 			else
 			{
 				
 			}
-			break;
-
-
-		case '[':
-			if (in_chord)
-			{
-				fprintf(stderr, "Error, in %s at line %d. Already in chord\n", filename, line_count);
-			}
-			else
-			{
-				in_chord = TRUE;
-				chd_buf_index = 0;
-			}
-			break;
-
-
-		case ']':
-			if (!in_chord)
-			{
-			}
-			else
-			{
-				in_chord = FALSE;
-			}
-			/* process chord */
-			break;
-
-
-		case '#':
-			in_comment = TRUE;
-			break;
-
-
-		case '\n':
-		case '\r':
-			line_count++;
-			/* process line */
-			break;
-		default:
-			if (in_chord)
-			{
-				chd_buffer[chd_buf_index++] = c;
-			}
-			else if (in_directive_arg)
-			{
-			}
-			else if (in_directive)
-			{
-			}
-			else if (in_tab)
-			{
-			}
-			else
-			{
-			}
-
-			break;
+			
 		}
-
 		
 	}
 	
+	fclose(fp);
+
 	return (parsing_status);
 	
 }
-
-void read_rest_of_line(void)
-{
-	int ch;
-	while (ch = getc(stdin), ch != EOF && ch != '\n') ;
-	clearerr(stdin);
-}
-
-void terminate_buffer(char *buffer)
-{
-	buffer[BUFFER_LENGTH - 1] = '\0';
-
-	/* remove new line from buffer */
-	if (buffer[strlen(buffer) - 1] == '\n')
-	{
-		buffer[strlen(buffer) - 1] = '\0';
-	}
-	
-}
-
-
